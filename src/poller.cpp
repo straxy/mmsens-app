@@ -95,11 +95,12 @@ void Poller::stopThread(void)
 
 void Poller::do_poll(void)
 {
-    m_running = true;
-
     int sysfs_fd;
     struct pollfd pfd;
     uint8_t value;
+    std::string data;
+
+    m_running = true;
 
     // Open file that is polled
     sysfs_fd = open(std::string(m_path + "/interrupt").c_str(), O_RDONLY);
@@ -114,6 +115,10 @@ void Poller::do_poll(void)
         lseek(sysfs_fd, 0, SEEK_SET);
     }
 
+    // Print initial value
+    m_attributes["data"]->read(&data);
+    std::cout << "Initial " << data << std::endl;
+
     pfd.fd = sysfs_fd;
     pfd.events = POLLPRI|POLLERR;
 
@@ -124,8 +129,6 @@ void Poller::do_poll(void)
         // Error is <0, timeout =0
         if (ret > 0)
         {
-            std::string data;
-
             // Must do a read to retrigger (together with lseek)
             ret = read(sysfs_fd, &value, sizeof(value));
 
