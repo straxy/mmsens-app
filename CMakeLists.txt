@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(mmsens-app)
+project(mmsens-app LANGUAGES CXX)
 
 include_directories(include)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB SOURCES "src/*.cpp")
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
