@@ -1,70 +1,70 @@
-#include <iostream>
-#include <filesystem>
-#include <thread>
+#include "poller.h"
 #include <chrono>
 #include <csignal>
-#include "poller.h"
+#include <filesystem>
+#include <iostream>
+#include <memory>
+#include <thread>
 
 using namespace poller;
 namespace fs = std::filesystem;
 
-namespace
-{
+namespace {
 static bool signalReceived = false;
 };
 
-class SignalHandler
-{
+class SignalHandler {
 public:
-   SignalHandler() {}
-   ~SignalHandler() {}
-   static void setupSignals();
+  SignalHandler() {}
+  ~SignalHandler() {}
+  static void setupSignals();
+
 private:
-   static void handleSignal(int sig);
+  static void handleSignal(int sig);
 };
 
-void SignalHandler::setupSignals()
-{
-   std::signal(SIGINT, SignalHandler::handleSignal);
+void SignalHandler::setupSignals() {
+  std::signal(SIGINT, SignalHandler::handleSignal);
 }
 
-void SignalHandler::handleSignal(__attribute__((unused))int sig)
-{
-   signalReceived = true;
+void SignalHandler::handleSignal(__attribute__((unused)) int sig) {
+  signalReceived = true;
 }
 
-int main(int argc, char *argv[])
-{
-   std::cout << "Hello World!" << std::endl;
+int main(int argc, char *argv[]) {
+  std::cout << "Hello World!" << std::endl;
 
-   // check that valid sysfs path is passed
-   if ((argc != 2) || !fs::is_directory(argv[1]))
-   {
-      std::cout << "Sysfs path to mmsensX must be passed" << std::endl;
-      exit(-1);
-   }
+  // check that valid sysfs path is passed
+  if ((argc < 2) || (argc > 3) || !fs::is_directory(argv[1])) {
+    std::cout << "Sysfs path to mmsensX must be passed" << std::endl;
+    exit(-1);
+  }
 
-   // Configure signal handling
-   SignalHandler::setupSignals();
+  std::unique_ptr<Poller> daemon;
+  // Configure signal handling
+  SignalHandler::setupSignals();
 
-   // Create a poller
-   Poller daemon(argv[1]);
+  // Create a poller
+  if (argc == 2) {
+    daemon = std::unique_ptr<Poller>(new Poller(argv[1]));
+  } else {
+    daemon = std::unique_ptr<Poller>(new Poller(argv[1], argv[2]));
+  }
 
-   // Initialize the device
-   daemon.init();
+  // Initialize the device
+  daemon->init();
 
-   // Start poller thread
-   daemon.runThread();
+  // Start poller thread
+  daemon->runThread();
 
-   while (!signalReceived)
-   {
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-   }
+  while (!signalReceived) {
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
 
-   // Stop and join thread
-   daemon.stopThread();
+  // Stop and join thread
+  daemon->stopThread();
 
-   daemon.deinit();
+  daemon->deinit();
 
-   return 0;
+  return 0;
 }

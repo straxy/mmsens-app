@@ -5,79 +5,69 @@
  */
 
 #include "sysfsattr.h"
-#include <fstream>
 #include <filesystem>
+#include <fstream>
 
 namespace fs = std::filesystem;
 
-namespace sysfsattr
-{
+namespace sysfsattr {
 
-SysfsAttr::SysfsAttr(const std::string& path) : m_path{path}
-{
-}
+SysfsAttr::SysfsAttr(const std::string &path) : m_path{path} {}
 
-SysfsAttr::~SysfsAttr()
-{
+SysfsAttr::~SysfsAttr() {}
+
+//-----------------------------------------------------------------------------
+
+bool SysfsAttr::read(std::string *buf) {
+  bool read = false;
+  if (fs::is_regular_file(m_path) &&
+      ((fs::status(m_path).permissions() & fs::perms::owner_read) !=
+       fs::perms::none)) {
+    std::ifstream ifile(m_path);
+    ifile >> *buf;
+    read = true;
+    ifile.close();
+  }
+  return read;
 }
 
 //-----------------------------------------------------------------------------
 
-bool SysfsAttr::read(std::string *buf)
-{
-    bool read = false;
-    if (fs::is_regular_file(m_path) &&
-       ((fs::status(m_path).permissions() & fs::perms::owner_read) != fs::perms::none))
-    {
-        std::ifstream ifile(m_path);
-        ifile >> *buf;
-        read = true;
-        ifile.close();
-    }
-    return read;
+bool SysfsAttr::write(const std::string &data) {
+  bool written = false;
+  if (fs::is_regular_file(m_path) &&
+      ((fs::status(m_path).permissions() & fs::perms::owner_write) !=
+       fs::perms::none)) {
+    std::ofstream ofile(m_path);
+    ofile << data;
+    ofile.close();
+    written = true;
+  }
+  return written;
 }
 
 //-----------------------------------------------------------------------------
 
-bool SysfsAttr::write(const std::string &data)
-{
-    bool written = false;
-    if (fs::is_regular_file(m_path) &&
-       ((fs::status(m_path).permissions() & fs::perms::owner_write) != fs::perms::none))
-    {
-        std::ofstream ofile(m_path);
-        ofile << data;
-        ofile.close();
-        written = true;
-    }
-    return written;
+bool SysfsAttr::read(uint8_t *buf) {
+  std::string tmp;
+  bool ret = false;
+
+  if (read(&tmp)) {
+    *buf = std::atoi(tmp.c_str());
+    ret = true;
+  }
+
+  return ret;
 }
 
 //-----------------------------------------------------------------------------
 
-bool SysfsAttr::read(uint8_t *buf)
-{
-    std::string tmp;
-    bool ret = false;
+bool SysfsAttr::write(const uint8_t &data) {
+  std::string tmp = std::to_string(data);
 
-    if (read(&tmp))
-    {
-        *buf = std::atoi(tmp.c_str());
-        ret = true;
-    }
-
-    return ret;
+  return write(tmp);
 }
 
 //-----------------------------------------------------------------------------
 
-bool SysfsAttr::write(const uint8_t &data)
-{
-    std::string tmp = std::to_string(data);
-
-    return write(tmp);
-}
-
-//-----------------------------------------------------------------------------
-
-}   // namespace sysfsattr
+} // namespace sysfsattr

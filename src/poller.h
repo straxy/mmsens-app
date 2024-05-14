@@ -7,81 +7,83 @@
 #ifndef _POLLER_H_
 #define _POLLER_H_
 
-#include <string>
-#include <map>
 #include "sysfsattr.h"
+#include <map>
+#include <string>
+#include <thread>
 
 using namespace sysfsattr;
 
-namespace poller
-{
+namespace poller {
 
-class Poller
-{
+class Poller {
 public:
-    /**
-     * Constructor
-     * 
-     * @param path - path to sysfs device
-     */
-    explicit Poller(std::string path);
+  /**
+   * Constructor
+   *
+   * @param path - path to sysfs device
+   */
+  explicit Poller(std::string path);
+  explicit Poller(std::string path, std::string initval);
 
-    /* Disable copy constructor and assignment. */
-    Poller(const Poller&)              = delete;
-    Poller & operator=(const Poller&)  = delete;
+  /* Disable copy constructor and assignment. */
+  Poller(const Poller &) = delete;
+  Poller &operator=(const Poller &) = delete;
 
-    /** Destructor. */
-    virtual ~Poller();
+  /** Destructor. */
+  virtual ~Poller();
 
-    /**
-     * init
-     * 
-     * Initialize device and enable interrupt generation.
-     */
-    void init(void);
+  /**
+   * init
+   *
+   * Initialize device and enable interrupt generation.
+   */
+  void init(void);
 
-    /**
-     * deinit
-     * 
-     * Disable interrupt generation and turn off device.
-     */
-    void deinit(void);
+  /**
+   * deinit
+   *
+   * Disable interrupt generation and turn off device.
+   */
+  void deinit(void);
 
-    /**
-     * runThread
-     * 
-     * Start executing thread.
-     */
-    void runThread(void);
+  /**
+   * runThread
+   *
+   * Start executing thread.
+   */
+  void runThread(void);
 
-    /**
-     * stopThread
-     * 
-     * Stop executing thread.
-     */
-    void stopThread(void);
+  /**
+   * stopThread
+   *
+   * Stop executing thread.
+   */
+  void stopThread(void);
 
 private:
-    /**
-     * do_poll
-     * 
-     * Thread that polls sysfs interrupt attribute.
-     */
-    void do_poll(void);
+  /**
+   * do_poll
+   *
+   * Thread that polls sysfs interrupt attribute.
+   */
+  void do_poll(void);
 
-    /** Path to sysfs device. */
-    std::string m_path;
+  /** Path to sysfs device. */
+  std::string m_path;
 
-    /** Map where all attributes are stored. */
-    std::map<std::string, SysfsAttr *> m_attributes;
+  uint32_t m_initval;
 
-    /** Thread handle. */
-    std::thread m_thread;
+  /** Map where all attributes are stored. */
+  std::map<std::string, SysfsAttr *> m_attributes;
 
-    /** Flag used to control thread execution. */
-    bool m_running;
+  /** Thread handle. */
+  std::thread m_thread;
+
+  /** Flag used to control thread execution. */
+  bool m_running;
 };
 
-}   // namespace poller
+} // namespace poller
 
-#endif  // _POLLER_H_
+#endif // _POLLER_H_
