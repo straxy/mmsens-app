@@ -48,7 +48,7 @@ bool SysfsAttr::write(const std::string &data) {
 
 //-----------------------------------------------------------------------------
 
-bool SysfsAttr::read(uint8_t *buf) {
+bool SysfsAttr::read(uint32_t *buf) {
   std::string tmp;
   bool ret = false;
 
@@ -62,7 +62,7 @@ bool SysfsAttr::read(uint8_t *buf) {
 
 //-----------------------------------------------------------------------------
 
-bool SysfsAttr::write(const uint8_t &data) {
+bool SysfsAttr::write(const uint32_t &data) {
   std::string tmp = std::to_string(data);
 
   return write(tmp);

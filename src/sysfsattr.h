@@ -54,24 +54,24 @@ public:
   /**
    * bool_read
    *
-   * Read one byte value interpreted as uint8_t
+   * Read value interpreted as uint32_t
    *
    * @param buf - pointer to buffer where read data will be stored
    *
    * @returns bool - True if read was successful
    */
-  bool read(uint8_t *buf);
+  bool read(uint32_t *buf);
 
   /**
    * bool_write
    *
-   * Write one byte value interpreted as uint8_t
+   * Write value interpreted as uint32_t
    *
    * @param data - data to write
    *
    * @returns bool - True if read was successful
    */
-  bool write(const uint8_t &data);
+  bool write(const uint32_t &data);
 
 private:
   /** Stored attribute path. */
